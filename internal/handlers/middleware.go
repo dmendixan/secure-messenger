@@ -30,8 +30,6 @@ func AuthMiddleware(requiredRole string) gin.HandlerFunc {
 
 		// Парсим токен с кастомными claims
 		claims := &services.Claims{}
-		fmt.Println("JWT_SECRET being used:", config.JWTSecret)
-		fmt.Println("TOKEN STRING:", tokenString)
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			return []byte(config.JWTSecret), nil
 		})
