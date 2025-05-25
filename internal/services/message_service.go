@@ -7,15 +7,19 @@ import (
 )
 
 type MessageService struct {
-	Repo *repository.MessageRepository
+	Repo         *repository.MessageRepository
+	AESSecretKey []byte
 }
 
-func NewMessageService(repo *repository.MessageRepository) *MessageService {
-	return &MessageService{Repo: repo}
+func NewMessageService(r *repository.MessageRepository, key []byte) *MessageService {
+	return &MessageService{
+		Repo:         r,
+		AESSecretKey: key,
+	}
 }
 
-func (s *MessageService) SendMessage(senderID, receiverID uint, plainText string, key string) error {
-	encrypted, err := encryption.EncryptAES([]byte(key), plainText)
+func (s *MessageService) SendMessage(senderID, receiverID uint, plainText string) error {
+	encrypted, err := encryption.EncryptAES(s.AESSecretKey, plainText)
 	if err != nil {
 		return err
 	}
@@ -29,7 +33,7 @@ func (s *MessageService) SendMessage(senderID, receiverID uint, plainText string
 	return s.Repo.CreateMessage(message)
 }
 
-func (s *MessageService) GetMessages(userID uint, key string) ([]models.Message, error) {
+func (s *MessageService) GetMessages(userID uint) ([]models.Message, error) {
 	messages, err := s.Repo.GetMessagesForUser(userID)
 	if err != nil {
 		return nil, err
@@ -37,7 +41,7 @@ func (s *MessageService) GetMessages(userID uint, key string) ([]models.Message,
 
 	for i, msg := range messages {
 		if msg.Encrypted {
-			decrypted, err := encryption.DecryptAES([]byte(key), msg.Content)
+			decrypted, err := encryption.DecryptAES(s.AESSecretKey, msg.Content)
 			if err == nil {
 				messages[i].Content = decrypted
 			}

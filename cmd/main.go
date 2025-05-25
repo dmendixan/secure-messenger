@@ -20,7 +20,7 @@ func main() {
 	if err := config.DB.AutoMigrate(
 		&models.User{},
 		&models.RefreshToken{},
-		&models.Message{}, // <--- ДОБАВЛЕНО
+		&models.Message{},
 	); err != nil {
 		log.Fatalf("Migration failed: %v", err)
 	}
@@ -49,7 +49,7 @@ func main() {
 
 	// ===== Messaging Dependencies =====
 	messageRepo := repository.NewMessageRepository(config.DB)
-	messageService := services.NewMessageService(messageRepo)
+	messageService := services.NewMessageService(messageRepo, config.AESSecretKey) // ✅ передаём ключ
 	messageHandler := handlers.NewMessageHandler(messageService)
 
 	// --- Messaging Endpoints ---

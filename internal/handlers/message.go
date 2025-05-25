@@ -19,15 +19,15 @@ func (h *MessageHandler) SendMessage(c *gin.Context) {
 	var req struct {
 		ReceiverID uint   `json:"receiver_id"`
 		Content    string `json:"content"`
-		Key        string `json:"key"`
 	}
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input"})
 		return
 	}
 
 	userID := c.GetUint("user_id")
-	err := h.Service.SendMessage(userID, req.ReceiverID, req.Content, req.Key)
+	err := h.Service.SendMessage(userID, req.ReceiverID, req.Content) // ✅ key убран
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to send"})
 		return
@@ -37,10 +37,9 @@ func (h *MessageHandler) SendMessage(c *gin.Context) {
 }
 
 func (h *MessageHandler) GetMessages(c *gin.Context) {
-	key := c.Query("key")
 	userID := c.GetUint("user_id")
 
-	messages, err := h.Service.GetMessages(userID, key)
+	messages, err := h.Service.GetMessages(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get messages"})
 		return
